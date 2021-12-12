@@ -1,0 +1,84 @@
+/*
+ * led.c
+ *
+ *  Created on: Dec 1, 2021
+ *      Author: pjahn
+ */
+
+#include "led.h"
+#include "MKL25Z4.h"
+
+#define RED_LED_PIN 18
+#define PORTB_MASK 10
+#define PORTD_MASK 12
+#define GREEN_LED_PIN 19
+#define BLUE_LED_PIN 1
+#define MASK(x) (1 << (x))
+
+void RED_LED_Init()
+{
+	SIM->SCGC5 |= MASK(PORTB_MASK);
+	PORTB->PCR[RED_LED_PIN] &= PORT_PCR_MUX_MASK;
+	PORTB->PCR[RED_LED_PIN] = PORT_PCR_MUX(1);
+	PTB->PDDR |= MASK(RED_LED_PIN);
+}
+
+void GREEN_LED_Init()
+{
+	SIM->SCGC5 |= MASK(PORTB_MASK);
+	PORTB->PCR[GREEN_LED_PIN] &= PORT_PCR_MUX_MASK;
+	PORTB->PCR[GREEN_LED_PIN] = PORT_PCR_MUX(1);
+	PTB->PDDR |= MASK(GREEN_LED_PIN);
+}
+
+void BLUE_LED_Init()
+{
+	SIM->SCGC5 |= MASK(PORTD_MASK);
+	PORTD->PCR[BLUE_LED_PIN] &= PORT_PCR_MUX_MASK;
+	PORTD->PCR[BLUE_LED_PIN] = PORT_PCR_MUX(1);
+	PTD->PDDR |= MASK(BLUE_LED_PIN);
+}
+
+void RED_LED_ON()
+{
+	GPIOB->PCOR |= MASK(RED_LED_PIN);
+}
+
+void RED_LED_OFF()
+{
+	GPIOB->PSOR |= MASK(RED_LED_PIN);
+}
+
+void GREEN_LED_ON()
+{
+	GPIOB->PCOR |= MASK(GREEN_LED_PIN);
+}
+
+void GREEN_LED_OFF()
+{
+	GPIOB->PSOR |= MASK(GREEN_LED_PIN);
+}
+
+void BLUE_LED_ON()
+{
+	GPIOD->PCOR |= MASK(BLUE_LED_PIN);
+}
+
+void BLUE_LED_OFF()
+{
+	GPIOD->PSOR |= MASK(BLUE_LED_PIN);
+}
+
+void WHITE_LED_ON()
+{
+	GPIOB->PCOR |= MASK(RED_LED_PIN);
+	GPIOB->PCOR |= MASK(GREEN_LED_PIN);
+	GPIOD->PCOR |= MASK(BLUE_LED_PIN);
+}
+
+void WHITE_LED_OFF()
+{
+	GPIOB->PSOR |= MASK(RED_LED_PIN);
+	GPIOB->PSOR |= MASK(GREEN_LED_PIN);
+	GPIOD->PSOR |= MASK(BLUE_LED_PIN);
+}
