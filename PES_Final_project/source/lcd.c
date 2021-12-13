@@ -7,6 +7,8 @@
 
 #include "lcd.h"
 #include "delay.h"
+#include <math.h>
+
 
 #define PORTC_MASK 11
 #define RS 7
@@ -21,6 +23,9 @@
 #define D6 13
 #define D7 16
 #define MASK(x) (1 << (x))
+#define X_ADD (0x83)
+#define Y_ADD (0x8C)
+#define Z_ADD (0xC7)
 
 static void GPIO_Init()
 {
@@ -169,24 +174,21 @@ void lcd_setup()
 	lcd_data('X');
 	lcd_cmd(0x81);
 	lcd_data(':');
-	lcd_cmd(0x84);
-	lcd_data('g');
+
 
 	//Y
-	lcd_cmd(0x8B);
+	lcd_cmd(0x89);
 	lcd_data('Y');
-	lcd_cmd(0x8C);
+	lcd_cmd(0x8A);
 	lcd_data(':');
-	lcd_cmd(0x8F);
-	lcd_data('g');
+
 
 	//Z
-	lcd_cmd(0xC5);
+	lcd_cmd(0xC4);
 	lcd_data('Z');
-	lcd_cmd(0xC6);
+	lcd_cmd(0xC5);
 	lcd_data(':');
-	lcd_cmd(0xC9);
-	lcd_data('g');
+
 }
 
 
@@ -204,19 +206,39 @@ void lcd_print_sign(bool x_flag, bool y_flag, bool z_flag)
 		lcd_putch(0x82, '+');
 
 	if(y_flag == true)
-		lcd_putch(0x8D, '-');
+		lcd_putch(0x8B, '-');
 	else
-		lcd_putch(0x8D, '+');
+		lcd_putch(0x8B, '+');
 
 	if(x_flag == true)
-		lcd_putch(0xC7, '-');
+		lcd_putch(0xC6, '-');
 	else
-		lcd_putch(0xC7, '+');
+		lcd_putch(0xC6, '+');
+}
+void lcd_print (uint8_t add,uint16_t num)
+{
+	uint8_t temp[4];
+	uint8_t digits = (log10(num) +1);
+	for(int i = 0; i<digits; i++)
+	{
+		*(temp+i) = num % 10;
+		num = num/10;
+	}
+	for(int i =0; i<4; i++)
+	{
+		lcd_putch((add+i), 0x20);
+	}
+	for(int i =0; i<digits; i++)
+	{
+		lcd_putch(add, (temp[digits - 1 - i] + '0'));
+		add++;
+	}
 }
 
-void lcd_print_value(int16_t acc_X, int16_t acc_Y, int16_t acc_Z)
+void lcd_print_value(uint16_t acc_X, uint16_t acc_Y, uint16_t acc_Z)
 {
-	lcd_putch(0x83, (acc_X + '0'));
-	lcd_putch(0x8E, (acc_Y + '0'));
-	lcd_putch(0xC8, (acc_Z + '0'));
+
+	lcd_print(X_ADD, acc_X);
+	lcd_print(Y_ADD, acc_Y);
+	lcd_print(Z_ADD, acc_Z);
 }

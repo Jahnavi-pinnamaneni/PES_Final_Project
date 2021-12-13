@@ -16,11 +16,12 @@
 
 #define SENSITIVITY (4096*4)
 #define MASK 0x8000
+#define CALIBRATE_AVG 100
 
 bool x_flag = false, y_flag = false, z_flag = false;
 int16_t acc_X=0, acc_Y=0, acc_Z=0;
 float roll=0.0, pitch=0.0;
-
+int16_t X_offset = 0, Y_offset = 0, Z_offset = 0;
 //mma data ready
 extern uint32_t DATA_READY;
 
@@ -55,11 +56,6 @@ void read_full_xyz()
 		temp[i] = (int16_t) ((data[2*i]<<8) | data[2*i+1]);
 	}
 
-	// Align for 14 bits
-//	acc_X = temp[0]/4;
-//	acc_Y = temp[1]/4;
-//	acc_Z = temp[2]/4;
-
 	if(acc_X & MASK)
 		x_flag = true;
 	else
@@ -81,35 +77,36 @@ void read_full_xyz()
 	acc_X = temp[0]/4;
 	acc_Y = temp[1]/4;
 	acc_Z = temp[2]/4;
-	//printf("x: %d, y:%d, z:%d\r\n",acc_X, acc_Y, acc_Z);
+	printf("x: %d, y:%d, z:%d\r\n",acc_X, acc_Y, acc_Z);
 }
 
 
-//void read_xyz(void)
-//{
-//	// sign extend byte to 16 bits - need to cast to signed since function
-//	// returns uint8_t which is unsigned
-//	acc_X = (int8_t) i2c_read_byte(MMA_ADDR, REG_XHI);
-//	Delay(100);
-//	acc_Y = (int8_t) i2c_read_byte(MMA_ADDR, REG_YHI);
-//	Delay(100);
-//	acc_Z = (int8_t) i2c_read_byte(MMA_ADDR, REG_ZHI);
-//
-//
-//}
-//
-void convert_xyz_to_roll_pitch(void) {
-	float ax = acc_X/COUNTS_PER_G,
-				ay = acc_Y/COUNTS_PER_G,
-				az = acc_Z/COUNTS_PER_G;
 
-//	roll = atan2(ay, az)*180/M_PI;
-//	pitch = atan2(ax, sqrt(ay*ay + az*az))*180/M_PI;
-	roll = atan2(ay,sqrt(ax*ax + az*az));
-	pitch = atan2(ax, sqrt(ay*ay + az*az));
-	printf("roll: %d, pitch:%d\r\n",roll, pitch);
+
+void mma_calibrate(void)
+{
+	printf("Place the device on a flat surface, Calibration will begin in 10 secs\r\n");
+	delay(10000);
+	printf("Calibration Begin\r\n");
+	int32_t x_cal = 0, y_cal = 0, z_cal = 0;
+	for(int i = 0; i <CALIBRATE_AVG ; i++)
+	{
+		read_full_xyz();
+		x_cal += acc_X;
+		y_cal += acc_Y;
+		z_cal += acc_Z;
+	}
+	x_cal /= CALIBRATE_AVG;
+	y_cal /= CALIBRATE_AVG;
+	z_cal /= CALIBRATE_AVG;
+
+	X_offset = -1 * x_cal;
+	Y_offset = -1 * y_cal;
+	Z_offset = (SENSITIVITY/4) - z_cal;
+
+	printf("Offset %d %d %d \r\n", X_offset, Y_offset, Z_offset);
+	printf("Calibration End\r\n");
 }
-
 
 //mma data ready irq
 // void PORTA_IRQHandler()

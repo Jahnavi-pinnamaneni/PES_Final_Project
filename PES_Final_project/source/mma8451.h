@@ -23,6 +23,9 @@
 #define REG_WHOAMI 0x0D
 #define REG_CTRL1  0x2A
 #define REG_CTRL4  0x2D
+#define X_OFFSET_REG 0x2F
+#define Y_OFFSET_REG 0x30
+#define Z_OFFSET_REG 0x31
 
 #define WHOAMI 0x1A
 
@@ -31,11 +34,12 @@
 
 int init_mma(void);
 void read_full_xyz(void);
-//void read_xyz(void);
-void convert_xyz_to_roll_pitch(void);
+
+void mma_calibrate(void);
 
 extern float roll, pitch;
 extern int16_t acc_X, acc_Y, acc_Z;
 extern bool x_flag, y_flag, z_flag;
+extern int16_t X_offset, Y_offset, Z_offset;
 
 #endif /* MMA8451_H_ */
