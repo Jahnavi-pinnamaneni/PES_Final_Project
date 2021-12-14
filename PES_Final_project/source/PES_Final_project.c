@@ -68,7 +68,6 @@ static void LcdTask(void *pvParameters) {
 		static uint32_t prev_duration = 0;
 
 	    duration = xTaskGetTickCount() - prev_duration;
-	    printf("%u msec\n", duration);
 	    if(test)
 	        	assert(duration == LCD_task_delay);
 

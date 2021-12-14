@@ -2,7 +2,7 @@
  * mma8451.h
  *
  *  Created on: Nov 20, 2021
- *      Author: pjahn
+ * 	Author: Jahnavi Pinnamaneni
  */
 
 #ifndef MMA8451_H_

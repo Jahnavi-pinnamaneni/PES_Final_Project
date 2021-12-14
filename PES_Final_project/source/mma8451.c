@@ -3,22 +3,23 @@
  *
  *  Created on: Nov 20, 2021
  *  Author: Jahnavi Pinnamaneni; japi8358@colorado.edu
+ *
+ *  Citation:  Alexander Dean
  */
 
 #include <MKL25Z4.H>
+#include <stdio.h>
 #include "mma8451.h"
 #include "i2c.h"
 #include "delay.h"
-#include <stdio.h>
-
 #include <fsl_debug_console.h>
 
 #define SENSITIVITY (4096)
 #define CALIBRATE_AVG 100
+#define DELAY_VALUE 5000
 
 int16_t acc_X=0, acc_Y=0, acc_Z=0;
 int16_t X_offset = 0, Y_offset = 0, Z_offset = 0;
-
 
 
 //initializes mma8451 sensor
@@ -30,6 +31,11 @@ int init_mma()
 	return 1;
 }
 
+/*
+ * This function reads the vector values and gives the ADC readings.
+ * Data is 14bit but is stored in the upper 14 bits of the 16 bit register hence this
+ * value needs to be divided by 4 when used.
+ */
 void read_full_xyz()
 {
 	int i;
@@ -59,14 +65,14 @@ void read_full_xyz()
 void mma_calibrate(void)
 {
 	printf("Place the device on a flat surface\r\n");
-	delay(5000);
+	delay(DELAY_VALUE);
 	printf("Calibration Begin\r\n");
-	delay(5000);
+	delay(DELAY_VALUE);
 	int32_t x_cal = 0, y_cal = 0, z_cal = 0;
 	for(int i = 0; i <CALIBRATE_AVG ; i++)
 	{
 		read_full_xyz();
-		x_cal += (acc_X>>2);
+		x_cal += (acc_X>>2);     // to align 14 bit data
 		y_cal += (acc_Y>>2);
 		z_cal += (acc_Z>>2);
 	}

@@ -10,9 +10,12 @@
 #include <math.h>
 
 #define PORTC_MASK 11
+#define MASK(x) (1 << (x))
+
 #define RS 7
 #define RW 0
 #define E 3
+
 #define D0 4
 #define D1 5
 #define D2 6
@@ -21,11 +24,39 @@
 #define D5 12
 #define D6 13
 #define D7 16
-#define MASK(x) (1 << (x))
+
 #define X_ADD (0x83)
 #define Y_ADD (0x8C)
 #define Z_ADD (0xC7)
+
+#define X 0x80
+#define Y 0x89
+#define Z 0xC4
+
+#define X_COLON 0x81
+#define Y_COLON 0x8A
+#define Z_COLON 0xC5
+
+#define X_SIGN 0x82
+#define Y_SIGN 0x8B
+#define Z_SIGN 0xC6
+
 #define SIGN_MASK 0x8000
+
+#define BIT_1 0x01
+#define BIT_2 0x02
+#define BIT_3 0x04
+#define BIT_4 0x08
+#define BIT_5 0x10
+#define BIT_6 0x20
+#define BIT_7 0x40
+#define BIT_8 0x80
+
+#define INIT 0x30
+#define FUNCTION_SET 0x38
+#define SET_CURSOR 0x10
+#define DISPLAY_ON 0x0F
+#define ENTRY_MODE 0x06
 
 /*
  * This function sets the GPIO configuration
@@ -96,21 +127,21 @@ static void clear_port()
 static void lcd_port_write(uint8_t data)
 {
 	clear_port();
-	if(data & 0x01)
+	if(data & BIT_1)
 		set_pin(D0);
-	if(data & 0x02)
+	if(data & BIT_2)
 		set_pin(D1);
-	if(data & 0x04)
+	if(data & BIT_3)
 		set_pin(D2);
-	if(data & 0x08)
+	if(data & BIT_4)
 		set_pin(D3);
-	if(data & 0x10)
+	if(data & BIT_5)
 		set_pin(D4);
-	if(data & 0x20)
+	if(data & BIT_6)
 		set_pin(D5);
-	if(data & 0x40)
+	if(data & BIT_7)
 		set_pin(D6);
-	if(data & 0x80)
+	if(data & BIT_8)
 		set_pin(D7);
 }
 
@@ -180,17 +211,16 @@ void lcd_data(uint8_t data)
 void lcd_init()
 {
 	GPIO_Init();
-	lcd_cmd(0x30);
+	lcd_cmd(INIT);
 	delay(30);
-	lcd_cmd(0x30);
+	lcd_cmd(INIT);
 	delay(10);
-	lcd_cmd(0x30);
+	lcd_cmd(INIT);
 	delay(10);
-	lcd_cmd(0x38);
-	lcd_cmd(0x00);
-	lcd_cmd(0x10);
-	lcd_cmd(0x0F);
-	lcd_cmd(0x06);
+	lcd_cmd(FUNCTION_SET);
+	lcd_cmd(SET_CURSOR);
+	lcd_cmd(DISPLAY_ON);
+	lcd_cmd(ENTRY_MODE);
 }
 
 /*
@@ -198,27 +228,30 @@ void lcd_init()
  *  ___________________________________
  * | X:                      Y:        |
  * |___________Z:______________________|
+ *
+ * The addresses are used only in this one place and do not change through course of excecution hence
+ * they are defined with preprocessor statement
  */
 void lcd_setup()
 {
 	//X
-	lcd_cmd(0x80);
+	lcd_cmd(X);
 	lcd_data('X');
-	lcd_cmd(0x81);
+	lcd_cmd(X_COLON);
 	lcd_data(':');
 
 
 	//Y
-	lcd_cmd(0x89);
+	lcd_cmd(Y);
 	lcd_data('Y');
-	lcd_cmd(0x8A);
+	lcd_cmd(Y_COLON);
 	lcd_data(':');
 
 
 	//Z
-	lcd_cmd(0xC4);
+	lcd_cmd(Z);
 	lcd_data('Z');
-	lcd_cmd(0xC5);
+	lcd_cmd(Z_COLON);
 	lcd_data(':');
 
 }
@@ -238,19 +271,19 @@ void lcd_putch(uint8_t add, uint8_t data)
 void lcd_print_sign(bool x_flag, bool y_flag, bool z_flag)
 {
 	if(x_flag == true)
-		lcd_putch(0x82, '-');
+		lcd_putch(X_SIGN, '-');
 	else
-		lcd_putch(0x82, '+');
+		lcd_putch(X_SIGN, '+');
 
 	if(y_flag == true)
-		lcd_putch(0x8B, '-');
+		lcd_putch(Y_SIGN, '-');
 	else
-		lcd_putch(0x8B, '+');
+		lcd_putch(Y_SIGN, '+');
 
 	if(x_flag == true)
-		lcd_putch(0xC6, '-');
+		lcd_putch(Z_SIGN, '-');
 	else
-		lcd_putch(0xC6, '+');
+		lcd_putch(Z_SIGN, '+');
 }
 
 /*
