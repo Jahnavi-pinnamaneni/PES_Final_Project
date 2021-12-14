@@ -25,7 +25,7 @@
 #define X_ADD (0x83)
 #define Y_ADD (0x8C)
 #define Z_ADD (0xC7)
-
+#define SIGN_MASK 0x8000
 
 /*
  * This function sets the GPIO configuration
@@ -280,10 +280,27 @@ void lcd_print (uint8_t add,uint16_t num)
 /*
  * This function prints the X, Y and Z values on the LCD Display
  */
-void lcd_print_value(uint16_t acc_X, uint16_t acc_Y, uint16_t acc_Z)
+void lcd_print_value(int16_t acc_X, int16_t acc_Y, int16_t acc_Z)
 {
+	bool x_flag = false, y_flag = false, z_flag = false;
+	if(acc_X & SIGN_MASK)
+		x_flag = true;
+	else
+		x_flag = false;
 
-	lcd_print(X_ADD, acc_X);
-	lcd_print(Y_ADD, acc_Y);
-	lcd_print(Z_ADD, acc_Z);
+	if(acc_Y & SIGN_MASK)
+		y_flag = true;
+	else
+		y_flag = false;
+
+	if(acc_Z & SIGN_MASK)
+		z_flag = true;
+	else
+		z_flag = false;
+	lcd_print_sign(x_flag, y_flag, z_flag);
+
+	printf("x: %d, y: %d, z: %d \r\n", ((acc_X>>2) + X_offset),((acc_Y>>2) + Y_offset), ((acc_Z>>2) + Z_offset) );
+	lcd_print(X_ADD, abs((acc_X>>2) + X_offset));
+	lcd_print(Y_ADD, abs((acc_Y>>2) + Y_offset));
+	lcd_print(Z_ADD, abs((acc_Z>>2) + Z_offset));
 }

@@ -36,9 +36,7 @@ int init_mma(void);
 void read_full_xyz(void);
 void mma_calibrate(void);
 
-extern float roll, pitch;
 extern int16_t acc_X, acc_Y, acc_Z;
-extern bool x_flag, y_flag, z_flag;
 extern int16_t X_offset, Y_offset, Z_offset;
 
 #endif /* MMA8451_H_ */

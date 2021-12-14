@@ -72,9 +72,7 @@ static void LcdTask(void *pvParameters) {
 	    if(test)
 	        	assert(duration == LCD_task_delay);
 
-		lcd_print_sign(x_flag, y_flag, z_flag);
-		printf("x: %d, y:%d, z:%d\r\n",acc_X+ X_offset, acc_Y+ Y_offset, acc_Z+ Z_offset);
-		lcd_print_value(abs(acc_X + X_offset), abs(acc_Y + Y_offset), abs(acc_Z + Z_offset));
+		lcd_print_value(acc_X, acc_Y, acc_Z );
 
 		prev_duration = xTaskGetTickCount();
 		test = true;

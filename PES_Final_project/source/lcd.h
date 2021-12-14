@@ -11,12 +11,14 @@
 #include "MKL25Z4.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "mma8451.h"
 
 void lcd_init();
 void lcd_cmd(uint8_t cmd);
 void lcd_data(uint8_t data);
-void lcd_print_value(uint16_t acc_X, uint16_t acc_Y, uint16_t acc_Z);
+void lcd_print_value(int16_t acc_X, int16_t acc_Y, int16_t acc_Z);
 void lcd_print_sign(bool x_flag, bool y_flag, bool z_flag);
 void lcd_putch(uint8_t add, uint8_t data);
 void lcd_setup();

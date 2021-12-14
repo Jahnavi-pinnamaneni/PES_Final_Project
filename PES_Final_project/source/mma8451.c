@@ -9,16 +9,13 @@
 #include "mma8451.h"
 #include "i2c.h"
 #include "delay.h"
-#include <math.h>
 #include <stdio.h>
 
 #include <fsl_debug_console.h>
 
 #define SENSITIVITY (4096)
-#define MASK 0x8000
 #define CALIBRATE_AVG 100
 
-bool x_flag = false, y_flag = false, z_flag = false;
 int16_t acc_X=0, acc_Y=0, acc_Z=0;
 int16_t X_offset = 0, Y_offset = 0, Z_offset = 0;
 
@@ -51,24 +48,9 @@ void read_full_xyz()
 		temp[i] = (int16_t) ((data[2*i]<<8) | data[2*i+1]);
 	}
 
-	if(acc_X & MASK)
-		x_flag = true;
-	else
-		x_flag = false;
-
-	if(acc_Y & MASK)
-		y_flag = true;
-	else
-		y_flag = false;
-
-	if(acc_Z & MASK)
-		z_flag = true;
-	else
-		z_flag = false;
-
-	acc_X = temp[0]/4;
-	acc_Y = temp[1]/4;
-	acc_Z = temp[2]/4;
+	acc_X = temp[0];
+	acc_Y = temp[1];
+	acc_Z = temp[2];
 }
 
 
@@ -84,9 +66,9 @@ void mma_calibrate(void)
 	for(int i = 0; i <CALIBRATE_AVG ; i++)
 	{
 		read_full_xyz();
-		x_cal += acc_X;
-		y_cal += acc_Y;
-		z_cal += acc_Z;
+		x_cal += (acc_X>>2);
+		y_cal += (acc_Y>>2);
+		z_cal += (acc_Z>>2);
 	}
 	x_cal /= CALIBRATE_AVG;
 	y_cal /= CALIBRATE_AVG;
