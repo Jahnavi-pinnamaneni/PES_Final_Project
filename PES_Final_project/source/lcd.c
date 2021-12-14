@@ -9,7 +9,6 @@
 #include "delay.h"
 #include <math.h>
 
-
 #define PORTC_MASK 11
 #define RS 7
 #define RW 0
@@ -27,104 +26,130 @@
 #define Y_ADD (0x8C)
 #define Z_ADD (0xC7)
 
+
+/*
+ * This function sets the GPIO configuration
+ */
+static void port_cfg(uint8_t var)
+{
+	PORTC->PCR[var] &= PORT_PCR_MUX_MASK;
+	PORTC->PCR[var] = PORT_PCR_MUX(1);
+	PTC->PDDR |= MASK(var);
+}
+
+/*
+ * This functions sets the GPIO output to LOW
+ */
+static void clear_pin(uint8_t var)
+{
+	GPIOC->PCOR |= MASK(var);
+}
+
+/*
+ * This function sets the GPIO output to HIGH
+ */
+static void set_pin(uint8_t var)
+{
+	GPIOC->PSOR |= MASK(var);
+}
+
+/*
+ * This function gates the clock for PORT C and configures the control and data pins required
+ * for communication with LCD
+ */
 static void GPIO_Init()
 {
-	//Try using PORTC->GPCLR
 	SIM->SCGC5 |= MASK(PORTC_MASK);
-	PORTC->PCR[RS] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[RS] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(RS);
-	PORTC->PCR[RW] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[RW] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(RW);
-	PORTC->PCR[E] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[E] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(E);
+	port_cfg(RS);
+	port_cfg(RW);
+	port_cfg(E);
 
-	PORTC->PCR[D0] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D0] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D0);
-	PORTC->PCR[D1] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D1] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D1);
-	PORTC->PCR[D2] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D2] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D2);
-	PORTC->PCR[D3] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D3] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D3);
-	PORTC->PCR[D4] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D4] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D4);
-	PORTC->PCR[D5] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D5] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D5);
-	PORTC->PCR[D6] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D6] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D6);
-	PORTC->PCR[D7] &= PORT_PCR_MUX_MASK;
-	PORTC->PCR[D7] = PORT_PCR_MUX(1);
-	PTC->PDDR |= MASK(D7);
+	port_cfg(D0);
+	port_cfg(D1);
+	port_cfg(D2);
+	port_cfg(D3);
+	port_cfg(D4);
+	port_cfg(D5);
+	port_cfg(D6);
+	port_cfg(D7);
 }
 
+/*
+ * This function is used to clear the data lines
+ */
 static void clear_port()
 {
-	GPIOC->PCOR |= MASK(D0);
-	GPIOC->PCOR |= MASK(D1);
-	GPIOC->PCOR |= MASK(D2);
-	GPIOC->PCOR |= MASK(D3);
-	GPIOC->PCOR |= MASK(D4);
-	GPIOC->PCOR |= MASK(D5);
-	GPIOC->PCOR |= MASK(D6);
-	GPIOC->PCOR |= MASK(D7);
-//	GPIOC->PCOR |= 0xFFFF;
+	clear_pin(D0);
+	clear_pin(D1);
+	clear_pin(D2);
+	clear_pin(D3);
+	clear_pin(D4);
+	clear_pin(D5);
+	clear_pin(D6);
+	clear_pin(D7);
 }
 
+/*
+ * Since Data lines are not connected to KL25Z in a sequential order, the data needs to be masked to
+ * set the correct pins
+ */
 static void lcd_port_write(uint8_t data)
 {
 	clear_port();
 	if(data & 0x01)
-		GPIOC->PSOR |= MASK(D0);
+		set_pin(D0);
 	if(data & 0x02)
-		GPIOC->PSOR |= MASK(D1);
+		set_pin(D1);
 	if(data & 0x04)
-		GPIOC->PSOR |= MASK(D2);
+		set_pin(D2);
 	if(data & 0x08)
-		GPIOC->PSOR |= MASK(D3);
+		set_pin(D3);
 	if(data & 0x10)
-		GPIOC->PSOR |= MASK(D4);
+		set_pin(D4);
 	if(data & 0x20)
-		GPIOC->PSOR |= MASK(D5);
+		set_pin(D5);
 	if(data & 0x40)
-		GPIOC->PSOR |= MASK(D6);
+		set_pin(D6);
 	if(data & 0x80)
-		GPIOC->PSOR |= MASK(D7);
+		set_pin(D7);
 }
 
+/*
+ * This is a helper function to set or clear the Register select pin
+ */
 static void lcd_rs(uint8_t data)
 {
 	if(data)
-		GPIOC->PSOR |= MASK(RS);
+		set_pin(RS);
 	else
-		GPIOC->PCOR |= MASK(RS);
+		clear_pin(RS);
 }
 
+/*
+ * This is a helper function to set or clear the Read/Write pin
+ */
 static void lcd_rw(uint8_t data)
 {
 	if(data)
-		GPIOC->PSOR |= MASK(RW);
+		set_pin(RW);
 	else
-		GPIOC->PCOR |= MASK(RW);
+		clear_pin(RW);
 }
 
+/*
+ * This is a helper function to set or clear the Enable pin
+ */
 static void lcd_e(uint8_t data)
 {
 	if(data)
-		GPIOC->PSOR |= MASK(E);
+		set_pin(E);
 	else
-		GPIOC->PCOR |= MASK(E);
+		clear_pin(E);
 }
 
+/*
+ * This function writes instructions to the LCD display
+ */
 void lcd_cmd(uint8_t cmd)
 {
 	lcd_rs(0);
@@ -135,13 +160,9 @@ void lcd_cmd(uint8_t cmd)
 	lcd_e(0);
 }
 
-//void lcd_busywait()
-//{
-//	lcd_rs(0);
-//	lcd_rw(1);
-//	while(GPIOC->PDOR & 0x00010000);
-//}
-
+/*
+ * This function writes data to the LCD Display
+ */
 void lcd_data(uint8_t data)
 {
 	GPIOC->PCOR |= 0xFFFF;
@@ -152,6 +173,10 @@ void lcd_data(uint8_t data)
 	delay(1);
 	lcd_e(0);
 }
+
+/*
+ * This function initializes the LCD Display
+ */
 void lcd_init()
 {
 	GPIO_Init();
@@ -167,6 +192,13 @@ void lcd_init()
 	lcd_cmd(0x0F);
 	lcd_cmd(0x06);
 }
+
+/*
+ * This function sets the constant characters on the LCD display
+ *  ___________________________________
+ * | X:                      Y:        |
+ * |___________Z:______________________|
+ */
 void lcd_setup()
 {
 	//X
@@ -191,13 +223,18 @@ void lcd_setup()
 
 }
 
-
+/*
+ * Helper function to put a character on the display
+ */
 void lcd_putch(uint8_t add, uint8_t data)
 {
 	lcd_cmd(add);
 	lcd_data(data);
 }
 
+/*
+ * This function checks if the accelerometer reading is positive or negative and displays +/- accordingly
+ */
 void lcd_print_sign(bool x_flag, bool y_flag, bool z_flag)
 {
 	if(x_flag == true)
@@ -215,6 +252,11 @@ void lcd_print_sign(bool x_flag, bool y_flag, bool z_flag)
 	else
 		lcd_putch(0xC6, '+');
 }
+
+/*
+ * This function parses the input accelerometer reading for the number digits and converts them string
+ * so that the numbers can be displayed on the LCD
+ */
 void lcd_print (uint8_t add,uint16_t num)
 {
 	uint8_t temp[4];
@@ -235,6 +277,9 @@ void lcd_print (uint8_t add,uint16_t num)
 	}
 }
 
+/*
+ * This function prints the X, Y and Z values on the LCD Display
+ */
 void lcd_print_value(uint16_t acc_X, uint16_t acc_Y, uint16_t acc_Z)
 {
 

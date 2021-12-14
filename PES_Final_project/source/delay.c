@@ -7,6 +7,8 @@
 
 #include "delay.h"
 
+//See header file for description
+
 void delay(int ms)
 {
 	ms = 5330 * ms;

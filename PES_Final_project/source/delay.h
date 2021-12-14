@@ -10,7 +10,18 @@
 
 #include <stdint.h>
 
+/*
+ * This function generates delay in ms
+ *
+ * Parameters: required msec
+ */
 void delay(int ms);
+
+/*
+ * This functions generates delay for specified number of counts
+ *
+ * Parameters: required count
+ */
 void Delay (uint32_t dly);
 
 #endif /* DELAY_H_ */

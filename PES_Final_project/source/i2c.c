@@ -2,7 +2,9 @@
  * i2c.c
  *
  *  Created on: Nov 20, 2021
- *      Author: pjahn
+ *  Author: Jahnavi Pinnamaneni; japi8358@colorado.edu
+ *
+ *  Citation: Alexander Dean
  */
 
 #include <MKL25Z4.H>
@@ -79,7 +81,7 @@ void i2c_busy(void){
 	i2c_lock=1;
 }
 
-#pragma no_inline
+//#pragma no_inline
 void i2c_wait(void) {
 	lock_detect = 0;
 	while(((I2C0->S & I2C_S_IICIF_MASK)==0) & (lock_detect < 200)) {
@@ -98,7 +100,7 @@ void i2c_start()
 }
 
 //send device and register addresses
-#pragma no_inline
+//#pragma no_inline
 void i2c_read_setup(uint8_t dev, uint8_t address)
 {
 	I2C0->D = dev;			  /*send dev address	*/
@@ -176,7 +178,7 @@ uint8_t i2c_read_byte(uint8_t dev, uint8_t address)
 
 
 //using 7bit addressing writes a byte data to dev:address
-#pragma no_inline
+//#pragma no_inline
 void i2c_write_byte(uint8_t dev, uint8_t address, uint8_t data)
 {
 

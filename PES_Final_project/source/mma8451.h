@@ -34,7 +34,6 @@
 
 int init_mma(void);
 void read_full_xyz(void);
-
 void mma_calibrate(void);
 
 extern float roll, pitch;

@@ -13,7 +13,6 @@
 #include "fsl_debug_console.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "led.h"
 #include "lcd.h"
 #include "i2c.h"
 #include "mma8451.h"
@@ -25,6 +24,11 @@
 #define MMA_task_delay 500
 #define LCD_task_delay 600
 
+/*
+ * This task reads the acceleration vectors in the X, Y and Z directions after initializing
+ * i2c communication, the MMA8541Q module and calibrating the same.
+ * The task is scheduled to execute every 500ms and this checked with the assert statement
+ */
 static void MMATask(void *pvParameters) {
 	i2c_init();
 	if (!init_mma()) {
@@ -45,12 +49,16 @@ static void MMATask(void *pvParameters) {
 		read_full_xyz();
 
 		prev_duration = xTaskGetTickCount();
-		vTaskDelay(pdMS_TO_TICKS(MMA_task_delay));
 		test = true;
+		vTaskDelay(pdMS_TO_TICKS(MMA_task_delay));
+
 	}
 }
 
-
+/*
+ * This task displays the accelerometer readings in the LCD.
+ * This task executes every 600ms.
+ */
 static void LcdTask(void *pvParameters) {
   lcd_init();
   lcd_setup();
@@ -65,11 +73,13 @@ static void LcdTask(void *pvParameters) {
 	        	assert(duration == LCD_task_delay);
 
 		lcd_print_sign(x_flag, y_flag, z_flag);
+		printf("x: %d, y:%d, z:%d\r\n",acc_X+ X_offset, acc_Y+ Y_offset, acc_Z+ Z_offset);
 		lcd_print_value(abs(acc_X + X_offset), abs(acc_Y + Y_offset), abs(acc_Z + Z_offset));
 
 		prev_duration = xTaskGetTickCount();
-		vTaskDelay(pdMS_TO_TICKS(LCD_task_delay));
 		test = true;
+		vTaskDelay(pdMS_TO_TICKS(LCD_task_delay));
+
   }
 }
 
@@ -87,8 +97,6 @@ int main(void) {
     /* Init FSL debug console. */
     BOARD_InitDebugConsole();
 #endif
-
-    PRINTF("Hello World\n");
 
     if ((xTaskCreate(
         MMATask,
@@ -115,6 +123,7 @@ int main(void) {
     }
 
     vTaskStartScheduler();
+
     for(;;) {
       __asm("NOP");
     }
