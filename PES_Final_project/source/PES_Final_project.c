@@ -80,7 +80,6 @@ static void LcdTask(void *pvParameters) {
   }
 }
 
-
 /*
  * @brief   Application entry point.
  */
